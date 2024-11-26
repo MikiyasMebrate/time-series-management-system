@@ -193,34 +193,67 @@ def indicator_detail_view (request , id):
 @login_required(login_url='login')
 def data_view(request):
     form = ImportFileIndicatorAddValueForm(request.POST or None, request.FILES or None)
-    last_indicator_id = Indicator.objects.last().id
-    global imported_data_global
-    global type_of_data
+    try:
+        last_indicator_id = Indicator.objects.last().id
+    except:
+        last_indicator_id = 0
+
 
     if request.method == 'POST':
         if 'fileDataValue' in request.POST:
             if form.is_valid():
                 type_of_data = form.cleaned_data['type_of_data']
                 if type_of_data == 'yearly':
-                    type_of_data = 'yearly'
+                    request.session['data_import_type'] = 'yearly'
                     success, imported_data,result = handle_uploaded_Annual_file(file = request.FILES['file'])
                 elif type_of_data == 'quarterly':
-                    type_of_data = 'quarterly'
+                    request.session['data_import_type'] = 'quarterly'
                     success, imported_data, result = handle_uploaded_Quarter_file(file = request.FILES['file'])
                 elif type_of_data == 'monthly':
-                    type_of_data = 'monthly'
+                    request.session['data_import_type'] = 'monthly'
                     success, imported_data, result = handle_uploaded_Month_file(file = request.FILES['file'])
-                imported_data_global = imported_data
-                context = {'result': result}
-                return render(request, 'user-admin/import_preview.html', context=context)
+
+        
+                if success:
+                    # Convert Dataset to JSON-serializable format
+                    serialized_data = imported_data.dict  # Converts Dataset rows into a list of dictionaries
+        
+                    # Store serialized data in the session
+                    request.session['data_view_imported_data'] = serialized_data
+        
+                    # Provide a preview of the import
+                    context = {'result': result}
+                    return render(request, 'user-admin/import_preview.html', context=context)
+                else:
+                    messages.error(request, '😞 An error occurred while processing the file.')
             else:
-                messages.error(request, '😞 Hello User , An error occurred while Importing Data')
+                messages.error(request, '😞 An error occurred while importing the data.')
         elif 'confirm_data_form' in request.POST:
-            success, message = confirm_file(imported_data_global, type_of_data)
-            if success:
-                messages.success(request, message)
+            # Retrieve serialized data from the session
+            serialized_data = request.session.get('data_view_imported_data', None)
+            type_of_data = request.session.get('data_import_type', None)
+        
+            if serialized_data and type_of_data:
+                # Convert serialized data back to a Dataset object
+                from tablib import Dataset  # Adjust based on your Dataset class
+        
+                imported_data = Dataset()
+                headers = serialized_data[0].keys() if serialized_data else []  # Extract headers from the first row
+                imported_data.headers = headers  # Set headers
+                for row in serialized_data:
+                    imported_data.append(list(row.values()))  # Add rows back to the Dataset
+        
+                # Process the original Dataset
+                success, message = confirm_file(imported_data, type_of_data)
+                if success:
+                    # Clear session data after successful processing
+                    del request.session['data_view_imported_data']
+                    del request.session['data_import_type']
+                    messages.success(request, message)
+                else:
+                    messages.error(request, message)
             else:
-                messages.error(request, message)
+                messages.error(request, '😞 No imported data found to confirm.')
 
     context = {
         'form' : form,
@@ -344,7 +377,6 @@ def topic(request):
     count = 30
 
     formFile = ImportFileForm() #responsive to read imported file for import export 
-    global imported_data_global #global variable to store imported data
    
     if 'q' in request.GET:
         q = request.GET['q']
@@ -378,19 +410,54 @@ def topic(request):
             formFile = ImportFileForm(request.POST, request.FILES)
             if formFile.is_valid():
                 file = request.FILES['file']
+        
+                # Parse the uploaded file into a Dataset object
                 success, imported_data, result = handle_uploaded_Topic_file(file)
-                imported_data_global = imported_data
-                context = {'result': result}
-                return render(request, 'user-admin/import_preview.html', context=context)
+        
+                if success:
+                    # Convert Dataset to JSON-serializable format
+                    serialized_data = imported_data.dict  # Converts Dataset rows into a list of dictionaries
+        
+                    # Store serialized data in the session
+                    request.session['topic_imported_data'] = serialized_data
+        
+                    # Provide a preview of the import
+                    context = {'result': result}
+                    return render(request, 'user-admin/import_preview.html', context=context)
+                else:
+                    messages.error(request, '😞 An error occurred while processing the file.')
             else:
-                messages.error(request, '😞 Hello User , An error occurred while Importing Topic')
+                messages.error(request, '😞 An error occurred while importing the topic.')
         elif 'confirm_data_form' in request.POST:
-            success, message = confirm_file(imported_data_global, 'topic')
-            if success:
-                messages.success(request, message)
+            # Retrieve serialized data from the session
+            serialized_data = request.session.get('topic_imported_data', None)
+        
+            if serialized_data:
+                # Convert serialized data back to a Dataset object
+                from tablib import Dataset  # Adjust based on your Dataset class
+        
+                imported_data = Dataset()
+                headers = serialized_data[0].keys() if serialized_data else []  # Extract headers from the first row
+                imported_data.headers = headers  # Set headers
+                for row in serialized_data:
+                    imported_data.append(list(row.values()))  # Add rows back to the Dataset
+        
+                # Process the original Dataset
+                success, message = confirm_file(imported_data, 'topic')
+                if success:
+                    # Clear session data after successful processing
+                    del request.session['topic_imported_data']
+                    messages.success(request, message)
+                else:
+                    messages.error(request, message)
             else:
-                messages.error(request, message)
+                messages.error(request, '😞 No imported data found to confirm.')
 
+            
+
+
+
+          
     
 
     
@@ -441,7 +508,6 @@ def categories(request):
     count = 20
 
     formFile = ImportFileForm() #responsive to read imported file for import export 
-    global imported_data_global #global variable to store imported data
 
     if 'q' in request.GET:
         q = request.GET['q']
@@ -476,18 +542,48 @@ def categories(request):
             formFile = ImportFileForm(request.POST, request.FILES)
             if formFile.is_valid():
                 file = request.FILES['file']
+        
+                # Parse the uploaded file into a Dataset object
                 success, imported_data, result = handle_uploaded_Category_file(file)
-                imported_data_global = imported_data
-                context = {'result': result}
-                return render(request, 'user-admin/import_preview.html', context=context)
+        
+                if success:
+                    # Convert Dataset to JSON-serializable format
+                    serialized_data = imported_data.dict  # Converts Dataset rows into a list of dictionaries
+        
+                    # Store serialized data in the session
+                    request.session['category_imported_data'] = serialized_data
+        
+                    # Provide a preview of the imports
+                    context = {'result': result}
+                    return render(request, 'user-admin/import_preview.html', context=context)
+                else:
+                    messages.error(request, '😞 An error occurred while processing the file.')
             else:
-                messages.error(request, '😞 Hello User , An error occurred while Importing Category')
+                messages.error(request, '😞 An error occurred while importing the category.')
         elif 'confirm_data_form' in request.POST:
-            success, message = confirm_file(imported_data_global, 'category')
-            if success:
-                messages.success(request, message)
+            # Retrieve serialized data from the session
+            serialized_data = request.session.get('category_imported_data', None)
+        
+            if serialized_data:
+                # Convert serialized data back to a Dataset object
+                from tablib import Dataset  # Adjust based on your Dataset class
+        
+                imported_data = Dataset()
+                headers = serialized_data[0].keys() if serialized_data else []  # Extract headers from the first row
+                imported_data.headers = headers  # Set headers
+                for row in serialized_data:
+                    imported_data.append(list(row.values()))  # Add rows back to the Dataset
+        
+                # Process the original Dataset
+                success, message = confirm_file(imported_data, 'category')
+                if success:
+                    # Clear session data after successful processing
+                    del request.session['category_imported_data']
+                    messages.success(request, message)
+                else:
+                    messages.error(request, message)
             else:
-                messages.error(request, message)
+                messages.error(request, '😞 No imported data found to confirm.')
 
     
     context = {
@@ -601,13 +697,15 @@ def delete_indicator(request, id):
 #All indicators
 @login_required(login_url='login')
 def all_indicators(request):
-    last_indicator_id = Indicator.objects.last().id
+    try:
+        last_indicator_id = Indicator.objects.last().id
+    except:
+        last_indicator_id = 0
     all_indicators = Indicator.objects.filter(is_deleted=False)
     count = 30
     form = IndicatorForm(request.POST or None)
 
     formFile = ImportFileForm() #responsive to read imported file for import export 
-    global imported_data_global #global variable to store imported data
 
     if 'q' in request.GET:
         q = request.GET['q']
@@ -637,18 +735,48 @@ def all_indicators(request):
                 formFile = ImportFileForm(request.POST, request.FILES)
                 if formFile.is_valid():
                     file = request.FILES['file']
+            
+                    # Parse the uploaded file into a Dataset object
                     success, imported_data, result = handle_uploaded_Indicator_file(file)
-                    imported_data_global = imported_data
-                    context = {'result': result}
-                    return render(request, 'user-admin/import_preview.html', context=context)
+            
+                    if success:
+                        # Convert Dataset to JSON-serializable format
+                        serialized_data = imported_data.dict  # Converts Dataset rows into a list of dictionaries
+            
+                        # Store serialized data in the session
+                        request.session['indicator_imported_data'] = serialized_data
+            
+                        # Provide a preview of the import
+                        context = {'result': result}
+                        return render(request, 'user-admin/import_preview.html', context=context)
+                    else:
+                        messages.error(request, '😞 An error occurred while processing the file.')
                 else:
-                    messages.error(request, '😞 Hello User , An error occurred while Importing Indicator')
+                    messages.error(request, '😞 An error occurred while importing the indicator.')
             elif 'confirm_data_form' in request.POST:
-                success, message = confirm_file(imported_data_global, 'indicator')
-                if success:
-                    messages.success(request, message)
+                # Retrieve serialized data from the session
+                serialized_data = request.session.get('indicator_imported_data', None)
+            
+                if serialized_data:
+                    # Convert serialized data back to a Dataset object
+                    from tablib import Dataset  # Adjust based on your Dataset class
+            
+                    imported_data = Dataset()
+                    headers = serialized_data[0].keys() if serialized_data else []  # Extract headers from the first row
+                    imported_data.headers = headers  # Set headers
+                    for row in serialized_data:
+                        imported_data.append(list(row.values()))  # Add rows back to the Dataset
+            
+                    # Process the original Dataset
+                    success, message = confirm_file(imported_data, 'indicator')
+                    if success:
+                        # Clear session data after successful processing
+                        del request.session['indicator_imported_data']
+                        messages.success(request, message)
+                    else:
+                        messages.error(request, message)
                 else:
-                    messages.error(request, message)
+                    messages.error(request, '😞 No imported data found to confirm.')
                 
 
 
