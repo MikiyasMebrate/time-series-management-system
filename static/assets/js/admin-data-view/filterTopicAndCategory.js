@@ -166,7 +166,6 @@ $(document).ready(function () {
 
     /// Table
     const contractAnnualTable = (data) => {
-        console.log(data)
         $('[name="tableHead"]').html(
             `
           <tr style="background-color: #40864b;" >
@@ -184,6 +183,15 @@ $(document).ready(function () {
                ` +
                data.year.map((year) =>{ return ` <th scope="col">${year.year_EC} E.C </th>`})
                + 
+               `
+         </tr>
+
+          <tr style="background-color: #9fdfa9;" >
+               <th scope="col" ></th>
+               <th scope="col" ></th>
+               ` +
+            data.year.map((year) => { return ` <th scope="col">${year.year_GC} G.C </th>` })
+            +
                `
          </tr>
             `
@@ -325,8 +333,9 @@ $(document).ready(function () {
         $('[name="tableHeadQuarter"]').html(
             `
           <tr style="background-color: #40864b;" >
-            <th style="width:300px;"  class="text-light" scope="col" >Quarterly</th>
-            <th style="width:300px;" scope="col" ></th>
+            <th style="width:100px;"  class="text-light" scope="col" >Quarterly</th>
+            <th style="width:100px;" scope="col" ></th>
+            <th style="width:50px;" scope="col" ></th>
               ` +
               data.indicator_lists.map((indicator) =>{ 
                 return ` <th scope="col" style="width:70px;"></th>`
@@ -336,7 +345,8 @@ $(document).ready(function () {
           </tr>
 
           <tr style="background-color: #9fdfa9;" >
-          <th scope="col" class="vertical-text text-start align-middle" >(Year)</th>
+          <th scope="col" class="vertical-text text-start align-middle" >(Year-EC)</th>
+           <th scope="col" class="vertical-text text-start align-middle" >(Year-GC)</th>
           <th scope="col" class="vertical-text text-start align-middle">(Quarter)</th>
             ` +
             headerListHtml
@@ -379,6 +389,7 @@ $(document).ready(function () {
                 tableBody+=`
                 <tr>
                    <th class="text-success" style="${hasYear ? 'font-size: 0;' : ''}" >${year.year_EC}</th>
+                   <th class="text-success" style="${hasYear ? 'font-size: 0;' : ''}" >${year.year_GC}</th>
                    <th class="text-success">${quarter.title_ENG}</th>
                    ${indicatorValue}
                 </tr>
@@ -424,8 +435,9 @@ $(document).ready(function () {
         $('[name="tableHeadMonth"]').html(
             `
           <tr style="background-color: #40864b;" >
-            <th style="width:300px;"  class="text-light" scope="col" >Monthly</th>
-            <th style="width:300px;" scope="col" ></th>
+            <th style="width:150px;"  class="text-light" scope="col" >Monthly</th>
+            <th style="width:150px;" scope="col" ></th>
+            <th style="width:200px;" scope="col" ></th>
               ` +
               data.indicator_lists.map((indicator) =>{ 
                 return ` <th scope="col" style="width:70px;"></th>`
@@ -435,8 +447,9 @@ $(document).ready(function () {
           </tr>
 
           <tr style="background-color: #9fdfa9;" >
-          <th scope="col" class="vertical-text text-start align-middle" >(Year)</th>
-          <th scope="col" class="vertical-text text-start align-middle">(Quarter)</th>
+          <th scope="col" class="vertical-text text-start align-middle" >(Year E.C)</th>
+          <th scope="col" class="vertical-text text-start align-middle" >(Year G.C)</th>
+          <th scope="col" class="vertical-text text-start align-middle">(Month)</th>
             ` +
             headerListHtml
             + 
@@ -478,6 +491,7 @@ $(document).ready(function () {
                 tableBody+=`
                 <tr>
                    <th class="text-success" >${hasYear ? "" : year.year_EC}</th>
+                   <th class="text-success" >${hasYear ? "" : year.year_GC}</th>
                    <th class="text-success">${month.month_AMH} (${month.month_ENG})</th>
                    ${indicatorValue}
                 </tr>

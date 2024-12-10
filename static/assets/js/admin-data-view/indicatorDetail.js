@@ -21,7 +21,7 @@ $(document).ready(function () {
             <th style="width:500px;"  class="text-light" scope="col" >Yearly</th>
             <th style="width:400px;" scope="col" ></th>
               ` +
-              data.year.map((year) =>{ return ` <th scope="col" style="width:100px;"></th>`})
+              data.year.map((year) =>{ return ` <th scope="col" style="width:110px;"></th>`})
               + 
               `
           </tr>
@@ -30,8 +30,17 @@ $(document).ready(function () {
                <th scope="col" >Name</th>
                <th scope="col" >ስም</th>
                ` +
-               data.year.map((year) =>{ return ` <th scope="col">${year.year_EC} E.C </th>`})
+            data.year.map((year) => { return `<th style="font-size:15px;" scope="col">${year.year_EC} E.C </th>`})
                + 
+               `
+         </tr>
+
+          <tr style="background-color: #9fdfa9;" >
+               <th scope="col" ></th>
+               <th scope="col" ></th>
+               ` +
+            data.year.map((year) => { return `<th style="font-size:10px;" scope="col">${year.year_GC} G.C </th>` })
+            +
                `
          </tr>
             `
