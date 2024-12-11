@@ -206,7 +206,7 @@ $(document).ready(function () {
                 let getIndicatorValue = filterIndicator.find((item) => item.for_datapoint__year_EC == year.year_EC)
                 if (getIndicatorValue){
                     return `
-                    <td>${Number(getIndicatorValue.performance.toFixed(1))}</td>
+                    <td>${getIndicatorValue && getIndicatorValue.performance != null ? Number(getIndicatorValue.performance.toFixed(1)) : "-"}</td>
                     `
                 }else{
                     return `<td> - </td>`
@@ -228,7 +228,7 @@ $(document).ready(function () {
                         let getIndicatorValue = filterChildOfChildIndicator.find((item) => item.for_datapoint__year_EC == year.year_EC)
                         if (getIndicatorValue){
                             return `
-                            <td>${Number(getIndicatorValue.performance.toFixed(1)) }</td>
+                            <td>${getIndicatorValue && getIndicatorValue.performance != null ? Number(getIndicatorValue.performance.toFixed(1)) : "-"}</td>
                             `
                         }else{
                             return `<td> - </td>`
@@ -252,7 +252,7 @@ $(document).ready(function () {
                     let getIndicatorValue = filterChildIndicator.find((item) => item.for_datapoint__year_EC == year.year_EC)
                     if (getIndicatorValue){
                         return `
-                        <td>${Number(getIndicatorValue.performance.toFixed(1))}</td>
+                        <td>${getIndicatorValue && getIndicatorValue.performance != null ? Number(getIndicatorValue.performance.toFixed(1)) : "-"}</td>
                         `
                     }else{
                         return `<td> - </td>`
@@ -357,7 +357,7 @@ $(document).ready(function () {
 
                     for(let child of children){
                         let value = data.quarter_data_value.find((item) => item.for_datapoint__year_EC == year.year_EC && item.for_quarter__number == quarter.number && item.indicator__id == child.id)
-                        indicatorValue += `<td> ${value ? Number(value.performance.toFixed(1))  : "-"}</td>`
+                        indicatorValue += `<td> ${value && value.performance != null ? Number(value.performance.toFixed(1)) : "-"}</td>`
                         childBody(child, space)
                     }
                 }
@@ -365,7 +365,7 @@ $(document).ready(function () {
                 let parentBody = () =>{
                     for(let indicator of data.indicator_lists.filter((item) => item.parent_id == null)){
                         let value = data.quarter_data_value.find((item) => item.for_datapoint__year_EC == year.year_EC && item.for_quarter__number == quarter.number && item.indicator__id == indicator.id)
-                        indicatorValue += `<td> ${value ? Number(value.performance.toFixed(1)) : "-"}</td>` 
+                        indicatorValue += `<td> ${value && value.performance != null ? Number(value.performance.toFixed(1)) : "-"}</td>` 
                         childBody(indicator)
                     }
                 }
@@ -459,7 +459,7 @@ $(document).ready(function () {
 
                     for(let child of children){
                         let value = data.month_data_value.find((item) => item.for_datapoint__year_EC == year.year_EC && item.for_month__number == month.number && item.indicator__id == child.id)
-                        indicatorValue+= `<td> ${value ?  Number(value.performance.toFixed(1)) : "-"}</td>`
+                        indicatorValue += `<td> ${value && value.performance != null ? Number(value.performance.toFixed(1)) : "-"}</td>`
                         childBody(child, space)
                     }
                 }
@@ -467,7 +467,7 @@ $(document).ready(function () {
                 let parentBody = () =>{
                     for(let indicator of data.indicator_lists.filter((item) => item.parent_id == null)){
                         let value = data.month_data_value.find((item) => item.for_datapoint__year_EC == year.year_EC && item.for_month__number == month.number && item.indicator__id == indicator.id)
-                        indicatorValue+= `<td> ${value ? Number(value.performance.toFixed(1)) : "-"}</td>` 
+                        indicatorValue+= `<td> ${value && value.performance != null ? Number(value.performance.toFixed(1)) : "-"}</td>` 
                         childBody(indicator)
                     }
                 }
