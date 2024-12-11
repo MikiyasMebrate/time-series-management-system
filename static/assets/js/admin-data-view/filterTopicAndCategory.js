@@ -206,7 +206,7 @@ $(document).ready(function () {
                 let getIndicatorValue = filterIndicator.find((item) => item.for_datapoint__year_EC == year.year_EC)
                 if (getIndicatorValue){
                     return `
-                    <td>${getIndicatorValue.performance}</td>
+                    <td>${Number(getIndicatorValue.performance.toFixed(1))}</td>
                     `
                 }else{
                     return `<td> - </td>`
@@ -214,32 +214,21 @@ $(document).ready(function () {
             })
 
             //child indicator
-            let filterChildIndicator = data.annual_data_value.filter(item => item.indicator__parent_id === Number(indicator_id))
-            let uniqueChildId = []
-            filterChildIndicator.map((item) =>{
-                if (!uniqueChildId.includes(item.indicator__id)){
-                    uniqueChildId.push(item.indicator__id)
-                }
-            })
+            let childDataIndicator = data.indicator_lists.filter(child => child.parent_id == indicator_id) 
+            let childDataFn = (parent, space = "&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp") => {
+                space += String("&nbsp;&nbsp;&nbsp;&nbsp")
 
-            let childDataFn = (parent, space="&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp") =>{
+                let childOfChildDataIndicator = data.indicator_lists.filter(child => child.parent_id == Number(parent))
+                console.log('child of child', childOfChildDataIndicator)
 
-                //child of child indicator
-                let filterChildOfIndicator = data.annual_data_value.filter(item => item.indicator__parent_id === Number(parent))
-                let uniqueChildOfChildId = []
-                filterChildOfIndicator.map((item) =>{
-                    if (!uniqueChildOfChildId.includes(item.indicator__id)){
-                        uniqueChildOfChildId.push(item.indicator__id)
-                    }
-                })
 
-                return uniqueChildOfChildId.map((child_id) =>{
-                    let filterChildOfChildIndicator = data.annual_data_value.filter((item) => item.indicator__id === Number(child_id))
+                return childOfChildDataIndicator.map((childOfChild) =>{
+                    let filterChildOfChildIndicator = data.annual_data_value.filter((item) => item.indicator__id === Number(childOfChild.id))
                     let childRow = data.year.map((year) =>{
                         let getIndicatorValue = filterChildOfChildIndicator.find((item) => item.for_datapoint__year_EC == year.year_EC)
                         if (getIndicatorValue){
                             return `
-                            <td>${getIndicatorValue.performance}</td>
+                            <td>${Number(getIndicatorValue.performance.toFixed(1)) }</td>
                             `
                         }else{
                             return `<td> - </td>`
@@ -248,23 +237,22 @@ $(document).ready(function () {
     
                     return  `
                 <tr>
-                   <td class="">${space}  ${filterChildOfIndicator[0].indicator__title_ENG}</td> 
-                   <td class="">${space}  ${filterChildOfIndicator[0].indicator__title_AMH}</td> 
+                   <td class="">${space}  ${childOfChild.title_ENG}</td> 
+                   <td class="">${space}  ${childOfChild.title_AMH}</td> 
                    ${childRow}
                 </tr>
-                ${space += String("&nbsp;&nbsp;&nbsp;&nbsp")}
-                ${childDataFn(filterChildOfChildIndicator[0].indicator__id)}
+                ${childDataFn(childOfChild.id, space)}
                 `
                 })
             }
 
-            let childData = uniqueChildId.map((child_id) =>{
-                let filterChildIndicator = data.annual_data_value.filter((item) => item.indicator__id === Number(child_id))
+            let childData = childDataIndicator.map((child) =>{
+                let filterChildIndicator = data.annual_data_value.filter((item) => item.indicator__id === Number(child.id))
                 let childRow = data.year.map((year) =>{
                     let getIndicatorValue = filterChildIndicator.find((item) => item.for_datapoint__year_EC == year.year_EC)
                     if (getIndicatorValue){
                         return `
-                        <td>${getIndicatorValue.performance}</td>
+                        <td>${Number(getIndicatorValue.performance.toFixed(1))}</td>
                         `
                     }else{
                         return `<td> - </td>`
@@ -273,11 +261,11 @@ $(document).ready(function () {
 
                 return  `
             <tr>
-               <td class="">&nbsp;&nbsp;&nbsp;&nbsp ${filterChildIndicator[0].indicator__title_ENG}</td> 
-               <td class="">&nbsp;&nbsp;&nbsp;&nbsp ${filterChildIndicator[0].indicator__title_AMH}</td> 
+               <td class="">&nbsp;&nbsp;&nbsp;&nbsp ${child.title_ENG}</td> 
+               <td class="">&nbsp;&nbsp;&nbsp;&nbsp ${child.title_AMH}</td> 
                ${childRow}
             </tr>
-            ${childDataFn(filterChildIndicator[0].indicator__id)}
+            ${childDataFn(child.id)}
             `
             })
 
@@ -369,7 +357,7 @@ $(document).ready(function () {
 
                     for(let child of children){
                         let value = data.quarter_data_value.find((item) => item.for_datapoint__year_EC == year.year_EC && item.for_quarter__number == quarter.number && item.indicator__id == child.id)
-                        indicatorValue+= `<td> ${value ? value.performance : "-"}</td>`
+                        indicatorValue += `<td> ${value ? Number(value.performance.toFixed(1))  : "-"}</td>`
                         childBody(child, space)
                     }
                 }
@@ -377,7 +365,7 @@ $(document).ready(function () {
                 let parentBody = () =>{
                     for(let indicator of data.indicator_lists.filter((item) => item.parent_id == null)){
                         let value = data.quarter_data_value.find((item) => item.for_datapoint__year_EC == year.year_EC && item.for_quarter__number == quarter.number && item.indicator__id == indicator.id)
-                        indicatorValue+= `<td> ${value ? value.performance : "-"}</td>` 
+                        indicatorValue += `<td> ${value ? Number(value.performance.toFixed(1)) : "-"}</td>` 
                         childBody(indicator)
                     }
                 }
@@ -471,7 +459,7 @@ $(document).ready(function () {
 
                     for(let child of children){
                         let value = data.month_data_value.find((item) => item.for_datapoint__year_EC == year.year_EC && item.for_month__number == month.number && item.indicator__id == child.id)
-                        indicatorValue+= `<td> ${value ? value.performance : "-"}</td>`
+                        indicatorValue+= `<td> ${value ?  Number(value.performance.toFixed(1)) : "-"}</td>`
                         childBody(child, space)
                     }
                 }
@@ -479,7 +467,7 @@ $(document).ready(function () {
                 let parentBody = () =>{
                     for(let indicator of data.indicator_lists.filter((item) => item.parent_id == null)){
                         let value = data.month_data_value.find((item) => item.for_datapoint__year_EC == year.year_EC && item.for_month__number == month.number && item.indicator__id == indicator.id)
-                        indicatorValue+= `<td> ${value ? value.performance : "-"}</td>` 
+                        indicatorValue+= `<td> ${value ? Number(value.performance.toFixed(1)) : "-"}</td>` 
                         childBody(indicator)
                     }
                 }

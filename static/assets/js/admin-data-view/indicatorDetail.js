@@ -14,12 +14,12 @@ $(document).ready(function () {
     }
 
     const AnnualTable = (data) => {
-        console.log(data)
+        
         //table header
         $('[name="tableHead"]').html(
             `
           <tr style="background-color: #40864b;" >
-            <th style="width:500px;"  class="text-light" scope="col" >Yearly</th>
+            <th style="width:800px;"  class="text-light" scope="col" >Yearly</th>
             <th style="width:400px;" scope="col" ></th>
               ` +
               data.year.map((year) =>{ return ` <th scope="col" style="width:110px;"></th>`})
@@ -60,13 +60,13 @@ $(document).ready(function () {
                         <button 
                             id="${indicator_id}-${year.year_EC}"
                             data-indicator-id="${indicator_id}" 
-                            data-value="${getIndicatorValue.performance}" 
+                            data-value="${Number(getIndicatorValue.performance.toFixed(1)) }" 
                             data-year="${year.year_EC}"
                             data-bs-toggle="modal" 
                             name="btnIndicator" 
                             data-bs-target="#indicatorEditValue" 
                             class="btn btn-block btn-outline-secondary border-0 fw-bold text-dark">
-                            ${getIndicatorValue.performance}
+                            ${Number(getIndicatorValue.performance.toFixed(1))}
                         </button>
                     </td>
                     `
@@ -88,25 +88,16 @@ $(document).ready(function () {
                 }
             })
 
-            //child indicator
-            let filterChildIndicator = data.annual_data_value.filter(item => item.indicator__parent_id === Number(indicator_id))
-            let uniqueChildId = []
-            filterChildIndicator.map((item) =>{
-                if (!uniqueChildId.includes(item.indicator__id)){
-                    uniqueChildId.push(item.indicator__id)
-                }
-            })
-             
+            //child indicator             
              let childDataIndicator = data.indicator_lists.filter(child => child.parent_id == indicator_id) 
 
-             console.log(childDataIndicator)
 
              let childDataFn = (parent, space = "&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp") => {
                 space += String("&nbsp;&nbsp;&nbsp;&nbsp")
 
                 //child of child indicator
                 let childOfChildDataIndicator = data.indicator_lists.filter(child => child.parent_id == Number(parent)) 
-                console.log('child of child', childOfChildDataIndicator)
+               
 
                 return childOfChildDataIndicator.map((childOfChild) =>{
                     let filterChildOfChildIndicator = data.annual_data_value.filter((item) => item.indicator__id === Number(childOfChild.id))
@@ -119,13 +110,13 @@ $(document).ready(function () {
                                 <button
                                     id="${childOfChild.id}-${year.year_EC}" 
                                     data-indicator-id="${childOfChild.id}" 
-                                    data-value="${getIndicatorValue.performance}" 
+                                    data-value="${Number(getIndicatorValue.performance.toFixed(1))}" 
                                     data-year="${year.year_EC}"
                                     data-bs-toggle="modal" 
                                     name="btnIndicator" 
                                     data-bs-target="#indicatorEditValue" 
                                     class="btn btn-block btn-outline-secondary border-0 fw-bold text-dark">
-                                    ${getIndicatorValue.performance}
+                                    ${Number(getIndicatorValue.performance.toFixed(1))}
                                 </button>
                             </td>
                             `
@@ -207,13 +198,13 @@ $(document).ready(function () {
                             <button
                                 id="${child.id}-${year.year_EC}"  
                                 data-indicator-id="${child.id}" 
-                                data-value="${getIndicatorValue.performance}" 
+                                data-value="${Number(getIndicatorValue.performance.toFixed(1))}" 
                                 data-year="${year.year_EC}"
                                 data-bs-toggle="modal" 
                                 name="btnIndicator" 
                                 data-bs-target="#indicatorEditValue" 
                                 class="btn btn-block btn-outline-secondary border-0 fw-bold text-dark">
-                                ${getIndicatorValue.performance}
+                                ${Number(getIndicatorValue.performance.toFixed(1))}
                             </button>
                         </td>
                         `
@@ -276,7 +267,7 @@ $(document).ready(function () {
                <td class="">&nbsp;&nbsp;&nbsp;&nbsp ${filterChildIndicator[0].indicator__title_AMH}</td> 
                ${childRow}
             </tr>
-            ${childDataFn(filterChildIndicator[0].indicator__id)}
+            ${childDataFn(child.id)}
             `
             })
 
@@ -400,13 +391,13 @@ $(document).ready(function () {
                                 id="${child.id}-${year.year_EC}-${quarter.number}" 
                                 data-indicator-id="${child.id}" 
                                 data-quarter-id="${quarter.number}" 
-                                data-value="${value ? value.performance : "-"}" 
+                                data-value="${value ? Number(value.performance.toFixed(1)) : "-"}" 
                                 data-year="${year.year_EC}"
                                 data-bs-toggle="modal" 
                                 name="btnIndicator" 
                                 data-bs-target="#indicatorEditValue" 
                                 class="btn btn-block btn-outline-secondary border-0 fw-bold text-dark">
-                                ${value ? value.performance : "-"}
+                                ${value ? Number(value.performance.toFixed(1)) : "-"}
                             </button>
                         </td>`
                         childBody(child, space)
@@ -422,13 +413,13 @@ $(document).ready(function () {
                                 id="${indicator.id}-${year.year_EC}-${quarter.number}" 
                                 data-indicator-id="${indicator.id}" 
                                 data-quarter-id="${quarter.number}" 
-                                data-value="${value ? value.performance : "-"}" 
+                                data-value="${value ? Number(value.performance.toFixed(1))  : "-"}" 
                                 data-year="${year.year_EC}"
                                 data-bs-toggle="modal" 
                                 name="btnIndicator" 
                                 data-bs-target="#indicatorEditValue" 
                                 class="btn btn-block btn-outline-secondary border-0 fw-bold text-dark">
-                                ${value ? value.performance : "-"}
+                                ${value ? Number(value.performance.toFixed(1))  : "-"}
                             </button>
                         
                         </td>` 
@@ -531,13 +522,13 @@ $(document).ready(function () {
                                 id="${child.id}-${year.year_EC}-month-${month.number}" 
                                 data-indicator-id="${child.id}" 
                                 data-month-id="${month.number}" 
-                                data-value="${value ? value.performance : "-"}" 
+                                data-value="${value ? Number(value.performance.toFixed(1)) : "-"}" 
                                 data-year="${year.year_EC}"
                                 data-bs-toggle="modal" 
                                 name="btnIndicator" 
                                 data-bs-target="#indicatorEditValue" 
                                 class="btn btn-block btn-outline-secondary border-0 fw-bold text-dark">
-                                ${value ? value.performance : "-"}
+                                ${value ? Number(value.performance.toFixed(1)) : "-"}
                             </button>
                         </td>`
                         childBody(child, space)
@@ -553,13 +544,13 @@ $(document).ready(function () {
                                 id="${indicator.id}-${year.year_EC}-month-${month.number}" 
                                 data-indicator-id="${indicator.id}" 
                                 data-month-id="${month.number}" 
-                                data-value="${value ? value.performance : "-"}" 
+                                data-value="${value ? Number(value.performance.toFixed(1))  : "-"}" 
                                 data-year="${year.year_EC}"
                                 data-bs-toggle="modal" 
                                 name="btnIndicator" 
                                 data-bs-target="#indicatorEditValue" 
                                 class="btn btn-block btn-outline-secondary border-0 fw-bold text-dark">
-                                ${value ? value.performance : "-"}
+                                ${value ? Number(value.performance.toFixed(1))  : "-"}
                             </button>
                         
                         </td>` 
