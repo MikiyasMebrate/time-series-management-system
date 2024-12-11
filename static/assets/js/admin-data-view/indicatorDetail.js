@@ -13,7 +13,8 @@ $(document).ready(function () {
         
     }
 
-    const AnnualTable = (data) =>{
+    const AnnualTable = (data) => {
+        console.log(data)
         //table header
         $('[name="tableHead"]').html(
             `
@@ -95,20 +96,20 @@ $(document).ready(function () {
                     uniqueChildId.push(item.indicator__id)
                 }
             })
+             
+             let childDataIndicator = data.indicator_lists.filter(child => child.parent_id == indicator_id) 
 
-            let childDataFn = (parent, space="&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp") =>{
+             console.log(childDataIndicator)
+
+             let childDataFn = (parent, space = "&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp") => {
+                space += String("&nbsp;&nbsp;&nbsp;&nbsp")
 
                 //child of child indicator
-                let filterChildOfIndicator = data.annual_data_value.filter(item => item.indicator__parent_id === Number(parent))
-                let uniqueChildOfChildId = []
-                filterChildOfIndicator.map((item) =>{
-                    if (!uniqueChildOfChildId.includes(item.indicator__id)){
-                        uniqueChildOfChildId.push(item.indicator__id)
-                    }
-                })
+                let childOfChildDataIndicator = data.indicator_lists.filter(child => child.parent_id == Number(parent)) 
+                console.log('child of child', childOfChildDataIndicator)
 
-                return uniqueChildOfChildId.map((child_id) =>{
-                    let filterChildOfChildIndicator = data.annual_data_value.filter((item) => item.indicator__id === Number(child_id))
+                return childOfChildDataIndicator.map((childOfChild) =>{
+                    let filterChildOfChildIndicator = data.annual_data_value.filter((item) => item.indicator__id === Number(childOfChild.id))
                     let childRow = data.year.map((year) =>{
                         let getIndicatorValue = filterChildOfChildIndicator.find((item) => item.for_datapoint__year_EC == year.year_EC)
                         if (getIndicatorValue){
@@ -116,8 +117,8 @@ $(document).ready(function () {
                             
                             <td>
                                 <button
-                                    id="${child_id}-${year.year_EC}" 
-                                    data-indicator-id="${child_id}" 
+                                    id="${childOfChild.id}-${year.year_EC}" 
+                                    data-indicator-id="${childOfChild.id}" 
                                     data-value="${getIndicatorValue.performance}" 
                                     data-year="${year.year_EC}"
                                     data-bs-toggle="modal" 
@@ -132,8 +133,8 @@ $(document).ready(function () {
                             return `
                             <td>
                                 <button 
-                                    id="${child_id}-${year.year_EC}" 
-                                    data-indicator-id="${child_id}" 
+                                    id="${childOfChild.id}-${year.year_EC}" 
+                                    data-indicator-id="${childOfChild.id}" 
                                     data-year="${year.year_EC}"
                                     data-value="" 
                                     data-bs-toggle="modal" 
@@ -150,14 +151,14 @@ $(document).ready(function () {
                     <tr>
                         <td>
                            <div class="row">
-                                <div class="col-9">&nbsp;&nbsp;&nbsp;&nbsp ${space}  ${filterChildOfIndicator[0].indicator__title_ENG}</div>
+                                <div class="col-9">&nbsp;&nbsp;&nbsp;&nbsp ${space}  ${childOfChild.title_ENG}</div>
                                 <div class="col-1">
                                     <a 
-                                        href="/user-admin/data_view_indicator_update/${filterChildOfIndicator[0].indicator__id}" 
+                                        href="/user-admin/data_view_indicator_update/${childOfChild.id}" 
                                         name="btnAddIndicator" 
                                         data-indicator-id="${indicatorId}"
-                                        data-indicator-name-eng="${filterChildOfIndicator[0].indicator__title_ENG}"
-                                        data-indicator-name-amg="${filterChildOfIndicator[0].indicator__title_AMH}"
+                                        data-indicator-name-eng="${childOfChild.title_ENG}"
+                                        data-indicator-name-amg="${childOfChild.title_AMH}"
                                         class="btn btn-sm btn-outline-primary border-0  pt-1 pb-1" 
                                         data-bs-placement="bottom" 
                                         title="Add new Sub-Indicator"><i class="fas fa-pen"></i></a> 
@@ -166,7 +167,7 @@ $(document).ready(function () {
                                      <button 
                                          type="button" 
                                          name="btnAddIndicator" 
-                                         data-indicator-id="${child_id}" 
+                                         data-indicator-id="${childOfChild.id}" 
                                          data-bs-toggle="modal" 
                                          data-bs-target="#modalAddNewIndicator" 
                                          class="btn btn-outline-primary border-0  pt-1 pb-1" 
@@ -177,8 +178,8 @@ $(document).ready(function () {
                                      <button 
                                          type="button" 
                                          name="btnDeleteIndicator" 
-                                         data-indicator-id="${child_id}"
-                                         data-indicator-name="${filterChildOfIndicator[0].indicator__title_ENG}" 
+                                         data-indicator-id="${childOfChild.id}"
+                                         data-indicator-name="${childOfChild.title_ENG}" 
                                          data-bs-toggle="modal" 
                                          data-bs-target="#modalRemoveIndicator" 
                                          class="btn btn-outline-danger border-0  pt-1 pb-1" 
@@ -187,25 +188,25 @@ $(document).ready(function () {
                                    </div>
                                 </div>
                          </td>
-                       <td class="">${space}  ${filterChildOfIndicator[0].indicator__title_AMH}</td> 
+                       <td class="">${space}  ${childOfChild.title_AMH}</td> 
                        ${childRow}
                     </tr>
-                ${space += String("&nbsp;&nbsp;&nbsp;&nbsp")}
-                ${childDataFn(filterChildOfChildIndicator[0].indicator__id, space)}
+                ${childDataFn(childOfChild.id, space)}
                 `
                 })
             }
 
-            let childData = uniqueChildId.map((child_id) =>{
-                let filterChildIndicator = data.annual_data_value.filter((item) => item.indicator__id === Number(child_id))
+             let childData = childDataIndicator.map((child) =>{
+                let filterChildIndicator = data.annual_data_value.filter((item) => item.indicator__id === Number(child.id))
+                 
                 let childRow = data.year.map((year) =>{
                     let getIndicatorValue = filterChildIndicator.find((item) => item.for_datapoint__year_EC == year.year_EC)
                     if (getIndicatorValue){
                         return `
                         <td>
                             <button
-                                id="${child_id}-${year.year_EC}"  
-                                data-indicator-id="${child_id}" 
+                                id="${child.id}-${year.year_EC}"  
+                                data-indicator-id="${child.id}" 
                                 data-value="${getIndicatorValue.performance}" 
                                 data-year="${year.year_EC}"
                                 data-bs-toggle="modal" 
@@ -220,8 +221,8 @@ $(document).ready(function () {
                         return `
                         <td> 
                             <button
-                                id="${child_id}-${year.year_EC}"  
-                                data-indicator-id="${child_id}" 
+                                id="${child.id}-${year.year_EC}"  
+                                data-indicator-id="${child.id}" 
                                 data-year="${year.year_EC}"
                                 data-value="" 
                                 data-bs-toggle="modal" 
@@ -251,7 +252,7 @@ $(document).ready(function () {
                               <button 
                                   type="button" 
                                   name="btnAddIndicator" 
-                                  data-indicator-id="${child_id}"
+                                  data-indicator-id="${child.id}"
                                   data-bs-toggle="modal" 
                                   data-bs-target="#modalAddNewIndicator" 
                                   class="btn btn-outline-primary border-0  pt-1 pb-1" 
@@ -262,7 +263,7 @@ $(document).ready(function () {
                               <button 
                                   type="button" 
                                   name="btnDeleteIndicator" 
-                                  data-indicator-id="${child_id}"
+                                  data-indicator-id="${child.id}"
                                   data-indicator-name="${filterChildIndicator[0].indicator__title_ENG}"
                                   data-bs-toggle="modal" 
                                   data-bs-target="#modalRemoveIndicator" 
@@ -285,7 +286,7 @@ $(document).ready(function () {
             <tr>
                 <td class="fw-bold">
                      <div class="row">
-                      <div class="col-9">${filterIndicator[0].indicator__title_ENG}</div>
+                      <div class="col-9">${filterIndicator[0]?.indicator__title_ENG || 'None'}</div>
                       <div class="col-1">
                          <a 
                              href="/user-admin/data_view_indicator_update/${filterIndicator[0].indicator__id}" 
